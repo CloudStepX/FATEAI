@@ -1,7 +1,6 @@
 // Create tab: describe it, see it built, change it with follow-ups, copy or save it, keep it in the library.
 (function(){
-const box=$('cmsgs'),inp=$('cq');
-const say=(c,x)=>{const m=el('div','m '+c,x);box.append(m);box.scrollTop=1e9;return m};
+const box=$('msgs'),inp=$('q');
 function row(m,k,v){if(v==null||v===''||(Array.isArray(v)&&!v.length))return;const d=el('div','br');d.append(el('span',null,k+': '+(Array.isArray(v)?v.join(', '):v)));m.append(d)}
 function understand(q){const r=Create.parse(q),m=say('a');
  if(r.route==='unknown'){m.textContent=r.notes[0]||'Describe what you want.';return r}
@@ -74,11 +73,12 @@ function follow(q){
  const res=Commit.settle(lib,rf.spec,Build),built=res&&res.built;if(!built){say('a','I could not rebuild that.');return true}
  const h=cur.hist.concat([cur.spec]);
  show(res.spec,built,'Done: '+rf.said.join(', ')+'.',[...rf.skipped,...(built.notes||[])],null,res);cur.hist=h.slice(-20);return true}
-function go(){const q=inp.value.trim();if(!q)return;inp.value='';grow2();say('u',q);
- try{if(cur&&follow(q))return;newBuild(understand(q),q)}catch(e){say('a','Something went wrong building that.')}}
-function grow2(){inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,140)+'px'}
-$('cgo').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();go()}};inp.addEventListener('input',grow2);
-const w=say('a','Describe what is on your mind and I will build it here. Library sections commit to its four parts (shape, logic, look, words) and each commit is checked against the finished file. Then change it with follow-ups like "make it blue", "add a reset button" or "rename it". Tap an idea or write your own.'),c=el('div','chips');
-['a blue to-do list with milk, eggs and bread','a 10 minute countdown timer','a tip calculator','convert km to miles','flashcards: hola - hello; adios - goodbye','random name picker with Ann, Bob, Cy','write a cover letter to Sam about the barista job','write a python function that reverses a string'].forEach(t=>{const b=el('button','chip',t);b.onclick=()=>{inp.value=t;go()};c.append(b)});w.append(c);
+function run(q){try{if(cur&&follow(q))return;newBuild(understand(q),q)}catch(e){say('a','Something went wrong building that.')}}
+const grow2=()=>grow(),go=()=>send(inp.value);
+// Auto mode: is this message a building request, or a change to what was just built?
+const VERB=/^\s*(please\s+)?(can|could|would)?\s*(you\s+)?(please\s+)?(create|make|build|write|generate|draft|design|give me|set up)\b/i;
+function wants(q,justBuilt){if(cur&&justBuilt){const low=q.toLowerCase().trim().replace(/[.!]+$/,'');if(/^(undo|go back|revert|start over|new|forget it)$/.test(low))return true;try{if(Build.refine(cur.spec,q))return true}catch(e){}}
+ if(!VERB.test(q))return false;try{return Create.parse(q).route!=='unknown'}catch(e){return false}}
+window.CreateUI={run,wants,reset(){try{retire()}catch(e){}cur=null}};
 if(window.Mind)Mind.mount({canvas:$('mc'),info:$('mi'),legend:$('ml')},lib);
 })();

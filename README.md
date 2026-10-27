@@ -245,3 +245,9 @@ The Feed tab now does the "feed my AI" work by itself, so any other AI (or you) 
 - **Ignores `PART 1 OF 3` lines** that multi-part pastes end with.
 - Works for pasted text, files and whole folders. Memory is never used for matching or filing.
 - Test: `node tools/autofeed_test.js` (12 checks). All older tests still pass. Service worker cache is fate-tree-v27.
+
+## Chat interface (v11)
+Ask and Create are now one chat. Tabs: chat, feed, tree, mind.
+- Message bubbles with avatar, typing dots and a send button.
+- Modes under the chat: **Auto** (building requests like "make a timer" go to Create, follow-ups such as "make it purple" or "undo" change the last build, everything else asks the library), **Ask** (library only) and **Create** (always build).
+- Chat history (last 40 messages, text only) is kept on the device and comes back when you reopen the app. "new chat" clears it.

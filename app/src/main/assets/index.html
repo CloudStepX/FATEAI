@@ -19,9 +19,9 @@ button:disabled{opacity:.45}
 :focus-visible{outline:2px solid var(--a);outline-offset:2px}
 main{flex:1;min-height:0;display:flex;flex-direction:column;margin:8px 0}
 section{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;overscroll-behavior:contain;padding-bottom:4px}
-#msgs,#cmsgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+#msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
 .m{padding:10px 12px;border:1px solid var(--l);box-shadow:0 0 18px rgba(46,230,255,.06);border-radius:var(--r);background:var(--p);white-space:pre-wrap;overflow-wrap:anywhere;max-width:94%}
-.u{align-self:flex-end;border-color:var(--v);background:var(--p2);box-shadow:0 0 16px rgba(165,107,255,.16)}
+.m.u{border-color:var(--v);background:var(--p2);box-shadow:0 0 16px rgba(165,107,255,.16)}
 .xc{color:var(--a);margin-top:6px;overflow-wrap:anywhere}.xe{margin:0 0 4px 14px}
 .meta{color:var(--m);font-size:11.5px;margin-top:6px;white-space:normal}
 .meta summary{cursor:pointer;padding:4px 0}
@@ -47,15 +47,26 @@ iframe.pv{display:block}
 .cm .hd{padding:6px 0;color:var(--ink)}
 .cr{border-top:1px solid var(--l);border-left:4px solid var(--a);padding:6px 0 6px 8px;margin-top:6px}
 .cr b{font-weight:600}.cr .ok{color:#38f2d0}.cr .no{color:#ff8fa3}.cm{font-size:13px}.cr .ev{color:var(--m);font-size:12px;overflow-wrap:anywhere}.cr .ev summary{cursor:pointer;padding:2px 0}
+
+.who{display:flex;align-items:center;gap:10px}.sub{color:var(--m);font-size:11.5px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38f2d0;margin-right:6px;box-shadow:0 0 8px #38f2d0}
+.av{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#02060c;background:linear-gradient(135deg,var(--a),var(--v));box-shadow:0 0 14px rgba(46,230,255,.45)}.av.big{width:38px;height:38px;font-size:13px}
+.r{display:flex;gap:8px;align-items:flex-end}.r.u{justify-content:flex-end}.r .m{max-width:calc(100% - 40px);min-width:0}.r.u .m{max-width:86%}
+.r.a .m{border-top-left-radius:4px}.r.u .m{border-top-right-radius:4px;background:linear-gradient(135deg,rgba(165,107,255,.28),rgba(46,230,255,.14))}
+.tm{display:block;color:var(--m);font-size:10.5px;margin-top:6px;opacity:.75}.r.u .tm{text-align:right}
+.typing{display:flex;gap:5px;padding:14px 14px}.typing i{width:7px;height:7px;border-radius:50%;background:var(--a);opacity:.35;animation:bl 1s infinite}.typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+@keyframes bl{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.7}}
+.old{opacity:.72}.sep{align-self:center;color:var(--m);font-size:11px;margin:2px 0}
+#modes{display:flex;gap:6px;align-items:center}.mode{min-height:32px;padding:4px 14px;border-radius:999px;font-size:12.5px;color:var(--m)}.mode.on{color:var(--a);background:var(--p2);border-color:var(--a);box-shadow:none}
+.send{flex:none;width:48px;height:48px;padding:0;border-radius:50%;font-size:20px;background:linear-gradient(135deg,rgba(46,230,255,.25),rgba(165,107,255,.25))}
 </style></head><body>
-<header><h1>FATE TREE</h1><button class="ghost" id="clr" title="Clear the conversation">clear chat</button></header>
+<header><div class="who"><span class="av big">FT</span><div><h1>FATE TREE</h1><div class="sub"><i class="dot"></i>on this device · offline</div></div></div><button class="ghost" id="clr" title="Start a new chat">new chat</button></header>
 <div id="stat" role="status"></div>
-<nav role="tablist"><button id="task" role="tab" aria-selected="true" class="on">ask</button><button id="tfeed" role="tab" aria-selected="false">feed</button><button id="ttree" role="tab" aria-selected="false">tree</button><button id="tmind" role="tab" aria-selected="false">mind</button><button id="tcreate" role="tab" aria-selected="false">create</button></nav>
+<nav role="tablist"><button id="task" role="tab" aria-selected="true" class="on">chat</button><button id="tfeed" role="tab" aria-selected="false">feed</button><button id="ttree" role="tab" aria-selected="false">tree</button><button id="tmind" role="tab" aria-selected="false">mind</button></nav>
 <main>
-<section id="pask" role="tabpanel"><div id="msgs" aria-live="polite"></div><div class="comp"><textarea id="q" rows="1" enterkeyhint="send" autocapitalize="sentences" placeholder="ask the library…"></textarea><button class="pri" id="go">Ask</button></div></section>
+<section id="pask" role="tabpanel"><div id="msgs" aria-live="polite"></div><div id="modes" role="group" aria-label="What should I do with your message"><button class="mode on" data-m="auto" aria-pressed="true">Auto</button><button class="mode" data-m="ask" aria-pressed="false">Ask</button><button class="mode" data-m="create" aria-pressed="false">Create</button></div><div class="comp"><textarea id="q" rows="1" enterkeyhint="send" autocapitalize="sentences" placeholder="Message Fate Tree…" aria-label="Message"></textarea><button class="pri send" id="go" aria-label="Send">&#10148;</button></div></section>
 <section id="pfeed" role="tabpanel" hidden><input id="fc" type="text" placeholder="library section (optional, auto if empty)"><textarea id="ft" rows="8" placeholder="paste knowledge here: notes, docs, code explanations…"></textarea><button class="pri" id="feed">Feed the tree</button><div class="meta">Add files (code, notes, docs, text):</div><input type="file" id="ff" multiple><div class="meta" id="fdl">Add a whole project folder (desktop):</div><input type="file" id="fd" webkitdirectory multiple><button id="ex">Export library (.json)</button><div id="fs" role="status"></div></section>
 <section id="ptree" role="tabpanel" hidden><div id="ts" class="meta" role="status"></div><div id="tr"></div></section>
 <section id="pmind" role="tabpanel" hidden><div><canvas id="mc" role="img" aria-label="4D map of the library"></canvas></div><div id="mi" class="meta" role="status"></div><div id="ml" class="chips"></div></section>
-<section id="pcreate" role="tabpanel" hidden><div id="cmsgs" aria-live="polite"></div><div class="comp"><textarea id="cq" rows="1" enterkeyhint="send" autocapitalize="sentences" placeholder="describe what you want…"></textarea><button class="pri" id="cgo">Create</button></div></section>
 </main>
 <script src="clusters/fate-tree.js"></script><script src="clusters/git.js"></script><script src="clusters/vibe-coding.js"></script><script src="clusters/web.js"></script><script src="clusters/language.js"></script><script src="clusters/logic.js"></script><script src="clusters/dictionary.js"></script><script src="clusters/mathematics.js"></script><script src="clusters/coding.js"></script><script src="clusters/languages.js"></script><script src="clusters/cs-theory.js"></script><script src="clusters/statistics-data.js"></script><script src="clusters/writing-study.js"></script><script src="clusters/programming-concepts.js"></script><script src="clusters/building-software.js"></script><script src="clusters/ai-ml.js"></script><script src="clusters/life-work.js"></script><script src="clusters/science.js"></script><script>window.MEGA=true</script><script src="explain.js"></script><script src="brain.js"></script><script src="skills.js"></script><script src="app.js"></script><script src="create.js"></script><script src="build.js"></script><script src="commit.js"></script><script src="mind.js"></script><script src="create-ui.js"></script><script>if("serviceWorker"in navigator&&!window.FateApp&&/^https?:/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{})</script></body></html>

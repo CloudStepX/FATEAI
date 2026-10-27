@@ -1,11 +1,13 @@
 const lib=new Library(),$=i=>document.getElementById(i);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const pause=()=>new Promise(r=>setTimeout(r));
-const TABS=['ask','feed','tree','mind','create'];
+const TABS=['ask','feed','tree','mind'];
 function tab(n){TABS.forEach(k=>{$('p'+k).hidden=k!==n;$('t'+k).classList.toggle('on',k===n);$('t'+k).setAttribute('aria-selected',k===n)});if(n==='tree')drawTree();if(window.Mind){if(n==='mind'){Mind.setActive(lastSecs);Mind.show()}else Mind.hide()}head()}
 TABS.forEach(k=>$('t'+k).onclick=()=>tab(k));
 function head(){const s=lib.stats(),sc=lib.data.Library?lib.sections().size:0;$('stat').textContent=sc?`${sc} sections · ${s.branches} branches · ${s.leaves} leaves`:`${s.clusters} clusters · ${s.branches} branches · ${s.leaves} leaves`+(s.links?` · ${s.links} synapses`:'')}
-const say=(c,x)=>{const m=el('div','m '+c,x);$('msgs').append(m);$('msgs').scrollTop=1e9;return m};
+const hhmm=()=>new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+function row(c,m,old){const r=el('div','r '+c);if(old)r.classList.add('old');if(c==='a')r.append(el('span','av','FT'));m.title=hhmm();r.append(m);$('msgs').append(r);$('msgs').scrollTop=1e9;return r}
+const say=(c,x)=>{const m=el('div','m '+c,x);row(c,m);return m};
 let lastSecs=new Set();
 const secsIn=p=>new Set(String(p||'').split(' + ').map(x=>x.replace(/^Library\s*›\s*/,'').split(' › ')[0].split(' / ')[0].trim()).filter(Boolean));
 function show(m,r){lastSecs=secsIn(r.path);
@@ -21,7 +23,7 @@ function showExplain(ex){const m=say('a',ex.lang?'This looks like '+ex.lang+'. I
   if(ex.rows.length>200)m.append(el('div','meta','Showing the first 200 lines.'));
   if(ex.summary)m.append(el('div',null,ex.summary));if(ex.note)m.append(el('div','meta',ex.note));
   m.append(el('div','meta','Explained by rules on this device. It does not run your code, and it can miss things. Read it with the symbol and keyword tables in the Library.'));$('msgs').scrollTop=1e9}
-function ask(){const q=$('q').value.trim();if(!q)return;$('q').value='';grow();say('u',q);
+function ask(q){lastCreate=false;
   let ex=null;try{ex=window.Explain&&Explain.explain(q)}catch{}if(ex){showExplain(ex);return}
   let sk=null;try{sk=window.Skills&&Skills.answer(q,lib)}catch{}
   if(sk){const m=say('a',sk.text);if(sk.note)m.append(el('div','meta',sk.note));$('msgs').scrollTop=1e9;return}
@@ -34,7 +36,25 @@ function ask(){const q=$('q').value.trim();if(!q)return;$('q').value='';grow();s
   if(t.kind==='unknown'){const m=say('a',(t.words&&t.words.length?'I don\'t know "'+t.words.join('", "')+'" yet. ':'I don\'t know that yet. ')+'Teach me the answer and I will keep it:'),x=el('textarea'),b=el('button','pri','Teach');x.rows=3;
     b.onclick=()=>{if(x.value.trim()){lib.teach(q,x.value.trim());m.replaceChildren('Learned'+(lib.data.Library?' and filed in the Library (section Taught)':'')+'. Ask me again.');head()}};m.append(x,b);x.focus();return}
   const am=say('a');show(am,t.r);if(fx)am.prepend(el('div','meta','I read '+fx.changes.map(c=>'"'+c[0]+'" as "'+c[1]+'"').join(', ')+'.'));$('msgs').scrollTop=1e9}
-$('go').onclick=ask;$('q').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}};
+// ---- the chat: one thread, one box. Auto sends building requests to Create and everything else to the library. ----
+let MODE='auto',lastCreate=false,busy=false;
+const PH={auto:'Message Fate Tree…',ask:'Ask the library…',create:'Describe what to build…'};
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{MODE=b.dataset.m;document.querySelectorAll('.mode').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)});$('q').placeholder=PH[MODE];$('q').focus()});
+function typing(){const m=el('div','m a typing');m.append(el('i'),el('i'),el('i'));m.setAttribute('aria-label','Fate Tree is thinking');return row('a',m)}
+function route(q){const mk=MODE==='create'||(MODE==='auto'&&window.CreateUI&&CreateUI.wants(q,lastCreate));
+  if(mk&&window.CreateUI){lastCreate=true;CreateUI.run(q)}else ask(q)}
+function send(q){q=(q==null?$('q').value:q).trim();if(!q||busy)return;$('q').value='';grow();say('u',q);busy=true;const t=typing();
+  setTimeout(()=>{t.remove();try{route(q)}catch(e){say('a','Something went wrong with that. Try again, or rephrase it.')}busy=false;$('msgs').scrollTop=1e9},320)}
+$('go').onclick=()=>send();$('q').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}};
+// ---- chat history kept on this device ----
+const HK='fate-chat-v1';
+function plain(m){const c=m.cloneNode(true);c.querySelectorAll('button,iframe,.chips,details,.meta,.cm,textarea').forEach(n=>n.remove());c.querySelectorAll('div,pre,details').forEach(n=>n.append('\n'));return c.textContent.replace(/\n\s*\n+/g,'\n').trim().slice(0,1500)}
+function saveChat(){try{const rows=[...$('msgs').querySelectorAll('.r:not(.old)')].filter(r=>!r.querySelector('.typing')),all=[...(histOld||[]),...rows.map(r=>({c:r.classList.contains('u')?'u':'a',t:plain(r.querySelector('.m'))})).filter(x=>x.t)].slice(-40);localStorage.setItem(HK,JSON.stringify(all))}catch{}}
+let histOld=[],saveT=0;
+function loadChat(){try{const a=JSON.parse(localStorage.getItem(HK)||'[]');return Array.isArray(a)?a.filter(x=>x&&typeof x.t==='string'&&(x.c==='u'||x.c==='a')):[]}catch{return[]}}
+new MutationObserver(()=>{clearTimeout(saveT);saveT=setTimeout(saveChat,700)}).observe($('msgs'),{childList:true,subtree:true,characterData:true});
+addEventListener('pagehide',saveChat);addEventListener('visibilitychange',()=>{if(document.hidden)saveChat()});
+function restore(a){histOld=a;a.forEach(x=>{const m=el('div','m '+x.c,x.t);row(x.c,m,true)});$('msgs').append(el('div','sep','— earlier chat —'));$('msgs').scrollTop=1e9}
 const isLib=o=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.values(o).every(v=>v&&typeof v==='object'&&!Array.isArray(v));
 async function readFiles(fs){let n=0,skip=0,dup=0,i=0;const base=$('fc').value;
   for(const f of fs){$('fs').textContent=`reading ${++i}/${fs.length}…`;if(i%4===0)await pause();
@@ -75,10 +95,10 @@ function drawTree(){const box=$('tr');box.replaceChildren();const rs=el('button'
     for(const b in lib.data[c]){const r=el('div','br'),x=el('button','sm','✕');x.onclick=()=>{if(confirm('Delete branch "'+b+'"?')){lib.remove(c,b);drawTree();head()}};r.append(el('span',null,`${b} (${lib.data[c][b].length})`),x);d.append(r)}
     const del=el('button','sm','Delete cluster');del.onclick=()=>{if(confirm('Delete cluster "'+c+'"?')){lib.remove(c);drawTree();head()}};d.append(del);box.append(d)}}
 addEventListener('visibilitychange',()=>{if(document.hidden)lib.flush()});addEventListener('pagehide',()=>lib.flush());
-function welcome(){const m=say('a','Ask a question and I answer from the library stored on this device. Nothing leaves the device.'+(lib.memCount()?' I remember '+lib.memCount()+' thing(s) about you.':' Tell me things ("my name is …", "remember that …") and I will keep them in Memory.')+' Add your own notes and code on the Feed tab.'),c=el('div','chips');
-  [['What are you?',1],['What do you know about me?',1],['Remember that …',0]].forEach(([t,go])=>{const b=el('button','chip',t);b.onclick=()=>{if(go){$('q').value=t;ask()}else{$('q').value='remember that ';$('q').focus();grow()}};c.append(b)});m.append(c)}
+function welcome(){const m=say('a','Hi, I am Fate Tree. Ask me anything and I answer from the library stored on this device, or tell me to make something (a timer, a list, a letter) and I build it right here in the chat. Nothing leaves the device.'+(lib.memCount()?' I remember '+lib.memCount()+' thing(s) about you.':' Tell me things ("my name is …", "remember that …") and I will keep them in Memory.')),c=el('div','chips');
+  [['What are you?',1],['What do you know about me?',1],['Make a 10 minute countdown timer',1],['Make a blue to-do list with milk, eggs and bread',1],['Remember that …',0]].forEach(([t,go])=>{const b=el('button','chip',t);b.onclick=()=>{if(go)send(t);else{$('q').value='remember that ';$('q').focus();grow()}};c.append(b)});m.append(c)}
 function grow(){const q=$('q');q.style.height='auto';q.style.height=Math.min(q.scrollHeight,140)+'px'}
 $('q').addEventListener('input',grow);
-$('clr').onclick=()=>{$('msgs').replaceChildren();welcome()};
+$('clr').onclick=()=>{$('msgs').replaceChildren();histOld=[];lastCreate=false;try{localStorage.removeItem(HK)}catch{}if(window.CreateUI)CreateUI.reset();welcome();saveChat()};
 if(window.FateApp){$('fd').hidden=true;$('fdl').hidden=true}
-lib.init().then(()=>{try{if(localStorage.getItem('fate-seed')!=='mega-13'){const L=lib.data.Library,k='Fate Tree / How I think';if(L&&L[k])L[k]=L[k].filter(l=>!/Rate my answers with the thumbs|Wrong\? Correct it/.test(l.t));lib.restore();localStorage.setItem('fate-seed','mega-13')}}catch{}head();welcome()});
+lib.init().then(()=>{try{if(localStorage.getItem('fate-seed')!=='mega-13'){const L=lib.data.Library,k='Fate Tree / How I think';if(L&&L[k])L[k]=L[k].filter(l=>!/Rate my answers with the thumbs|Wrong\? Correct it/.test(l.t));lib.restore();localStorage.setItem('fate-seed','mega-13')}}catch{}head();const h=loadChat();if(h.length)restore(h);else welcome()});
