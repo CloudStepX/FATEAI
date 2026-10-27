@@ -1,0 +1,61 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#02060c"><meta http-equiv="Content-Security-Policy" content="connect-src 'none'; form-action 'none'"><link rel="manifest" href="manifest.json"><title>Fate Tree</title>
+<style>
+:root{--bg:#02060c;--p:rgba(6,18,30,.88);--p2:rgba(12,36,56,.92);--l:#15506a;--ink:#dff7ff;--m:#8fbfd2;--a:#2ee6ff;--v:#a56bff;--r:10px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}[hidden]{display:none!important}
+html{background:var(--bg)}
+html,body{height:100%;margin:0;color:var(--ink);font:15px/1.45 ui-monospace,Menlo,monospace;-webkit-text-size-adjust:100%}
+body{background:radial-gradient(120% 55% at 50% -8%,rgba(46,230,255,.17),transparent 62%),radial-gradient(90% 45% at 100% 100%,rgba(165,107,255,.16),transparent 62%),linear-gradient(rgba(46,230,255,.04) 1px,transparent 1px) 0 0/100% 26px,var(--bg);display:flex;flex-direction:column;padding:env(safe-area-inset-top) calc(10px + env(safe-area-inset-right)) env(safe-area-inset-bottom) calc(10px + env(safe-area-inset-left))}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:10px 0 2px}
+h1{margin:0;font-size:20px;color:#eaffff;text-shadow:0 0 12px rgba(46,230,255,.65),0 0 26px rgba(165,107,255,.45)}
+#stat{color:var(--m);font-size:11.5px;margin-bottom:8px;line-height:1.5}
+nav{display:flex;gap:6px}nav button{flex:1;padding:10px 2px;font-size:14px}
+button{background:var(--p);color:var(--ink);border:1px solid var(--l);border-radius:var(--r);padding:10px 12px;min-height:44px;font:inherit;cursor:pointer}
+button:active{background:var(--p2)}
+button.on,.pri{border-color:var(--a);color:var(--a)}
+button.on{background:var(--p2);box-shadow:inset 0 -2px 0 var(--a),0 0 14px rgba(46,230,255,.28)}
+button:disabled{opacity:.45}
+.sm{padding:4px 12px;min-height:36px;font-size:13px}
+.ghost{background:none;border:none;color:var(--m);min-height:32px;padding:2px 8px;font-size:12px}
+:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+main{flex:1;min-height:0;display:flex;flex-direction:column;margin:8px 0}
+section{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;overscroll-behavior:contain;padding-bottom:4px}
+#msgs,#cmsgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+.m{padding:10px 12px;border:1px solid var(--l);box-shadow:0 0 18px rgba(46,230,255,.06);border-radius:var(--r);background:var(--p);white-space:pre-wrap;overflow-wrap:anywhere;max-width:94%}
+.u{align-self:flex-end;border-color:var(--v);background:var(--p2);box-shadow:0 0 16px rgba(165,107,255,.16)}
+.xc{color:var(--a);margin-top:6px;overflow-wrap:anywhere}.xe{margin:0 0 4px 14px}
+.meta{color:var(--m);font-size:11.5px;margin-top:6px;white-space:normal}
+.meta summary{cursor:pointer;padding:4px 0}
+.row{margin-top:8px;display:flex;gap:6px;align-items:center;color:var(--m);font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip.on{background:var(--p2);border-color:var(--a)}
+.chip{min-height:36px;padding:6px 12px;border-radius:999px;font-size:13px;color:var(--a)}
+textarea,input[type=text],input:not([type]){width:100%;background:#01070d;color:var(--ink);border:1px solid var(--l);border-radius:var(--r);padding:10px 12px;font:inherit;font-size:16px}
+textarea{resize:none}
+input[type=file]{width:100%;color:var(--m);font:inherit;font-size:13px}
+input[type=file]::file-selector-button{background:var(--p);color:var(--ink);border:1px solid var(--l);border-radius:var(--r);padding:8px 12px;margin-right:10px;font:inherit}
+.comp{display:flex;gap:6px;align-items:flex-end;padding-top:2px}.comp textarea{flex:1;max-height:140px}
+.cl{border:1px solid var(--l);border-radius:var(--r);padding:6px 12px;background:var(--p)}
+.cl summary{padding:10px 0;cursor:pointer;overflow-wrap:anywhere}
+pre{background:#01070d;border:1px solid var(--l);border-radius:var(--r);padding:10px;overflow:auto;font-size:12.5px;white-space:pre;margin:6px 0}
+.br{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;color:var(--m);border-top:1px solid var(--l)}
+.br span{overflow-wrap:anywhere}
+#fs,#ts{color:var(--m);font-size:12px;min-height:1.4em}
+iframe.pv{display:block}
+#mc{display:block;width:100%;border:1px solid var(--l);border-radius:var(--r);background:#01040a;touch-action:manipulation;box-shadow:0 0 26px rgba(46,230,255,.14),inset 0 0 40px rgba(165,107,255,.08)}
+#mi{margin:0}
+.cm{border:1px solid var(--l);border-radius:var(--r);padding:4px 10px 6px;margin-top:8px;background:rgba(3,12,22,.85);white-space:normal}
+.cm .hd{padding:6px 0;color:var(--ink)}
+.cr{border-top:1px solid var(--l);border-left:4px solid var(--a);padding:6px 0 6px 8px;margin-top:6px}
+.cr b{font-weight:600}.cr .ok{color:#38f2d0}.cr .no{color:#ff8fa3}.cm{font-size:13px}.cr .ev{color:var(--m);font-size:12px;overflow-wrap:anywhere}.cr .ev summary{cursor:pointer;padding:2px 0}
+</style></head><body>
+<header><h1>FATE TREE</h1><button class="ghost" id="clr" title="Clear the conversation">clear chat</button></header>
+<div id="stat" role="status"></div>
+<nav role="tablist"><button id="task" role="tab" aria-selected="true" class="on">ask</button><button id="tfeed" role="tab" aria-selected="false">feed</button><button id="ttree" role="tab" aria-selected="false">tree</button><button id="tmind" role="tab" aria-selected="false">mind</button><button id="tcreate" role="tab" aria-selected="false">create</button></nav>
+<main>
+<section id="pask" role="tabpanel"><div id="msgs" aria-live="polite"></div><div class="comp"><textarea id="q" rows="1" enterkeyhint="send" autocapitalize="sentences" placeholder="ask the library…"></textarea><button class="pri" id="go">Ask</button></div></section>
+<section id="pfeed" role="tabpanel" hidden><input id="fc" type="text" placeholder="library section (optional, auto if empty)"><textarea id="ft" rows="8" placeholder="paste knowledge here: notes, docs, code explanations…"></textarea><button class="pri" id="feed">Feed the tree</button><div class="meta">Add files (code, notes, docs, text):</div><input type="file" id="ff" multiple><div class="meta" id="fdl">Add a whole project folder (desktop):</div><input type="file" id="fd" webkitdirectory multiple><button id="ex">Export library (.json)</button><div id="fs" role="status"></div></section>
+<section id="ptree" role="tabpanel" hidden><div id="ts" class="meta" role="status"></div><div id="tr"></div></section>
+<section id="pmind" role="tabpanel" hidden><div><canvas id="mc" role="img" aria-label="4D map of the library"></canvas></div><div id="mi" class="meta" role="status"></div><div id="ml" class="chips"></div></section>
+<section id="pcreate" role="tabpanel" hidden><div id="cmsgs" aria-live="polite"></div><div class="comp"><textarea id="cq" rows="1" enterkeyhint="send" autocapitalize="sentences" placeholder="describe what you want…"></textarea><button class="pri" id="cgo">Create</button></div></section>
+</main>
+<script src="clusters/fate-tree.js"></script><script src="clusters/git.js"></script><script src="clusters/vibe-coding.js"></script><script src="clusters/web.js"></script><script src="clusters/language.js"></script><script src="clusters/logic.js"></script><script src="clusters/dictionary.js"></script><script src="clusters/mathematics.js"></script><script src="clusters/coding.js"></script><script src="clusters/languages.js"></script><script src="clusters/cs-theory.js"></script><script src="clusters/statistics-data.js"></script><script src="clusters/writing-study.js"></script><script src="clusters/programming-concepts.js"></script><script src="clusters/building-software.js"></script><script src="clusters/ai-ml.js"></script><script src="clusters/life-work.js"></script><script src="clusters/science.js"></script><script>window.MEGA=true</script><script src="explain.js"></script><script src="brain.js"></script><script src="skills.js"></script><script src="app.js"></script><script src="create.js"></script><script src="build.js"></script><script src="commit.js"></script><script src="mind.js"></script><script src="create-ui.js"></script><script>if("serviceWorker"in navigator&&!window.FateApp&&/^https?:/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{})</script></body></html>
